@@ -5,7 +5,8 @@ import sys
 import pickle
 import time
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
+from metaworld.envs import (ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE,
+                            ALL_V2_ENVIRONMENTS_GOAL_HIDDEN)
 from utils import *
 from models.mlp_policy import Policy
 from models.mlp_critic import Value
@@ -60,7 +61,9 @@ if torch.cuda.is_available():
     torch.cuda.set_device(args.gpu_index)
 
 """environment"""
-env = gym.make(args.env_name)
+#env = gym.make(args.env_name)
+env_creator = ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE['bin-picking-v2-goal-observable']
+env = env_creator()
 state_dim = env.observation_space.shape[0]
 is_disc_action = len(env.action_space.shape) == 0
 action_dim = 1 if is_disc_action else env.action_space.shape[0]

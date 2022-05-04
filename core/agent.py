@@ -4,6 +4,7 @@ from utils.torch import *
 import math
 import time
 import os
+import copy
 os.environ["OMP_NUM_THREADS"] = "1"
 
 
@@ -32,7 +33,7 @@ def collect_samples(pid, queue, env, policy, custom_reward,
             state = running_state(state)
         reward_episode = 0
 
-        for t in range(10000):
+        for t in range(501):
             state_var = tensor(state).unsqueeze(0)
             with torch.no_grad():
                 if mean_action:
@@ -41,6 +42,8 @@ def collect_samples(pid, queue, env, policy, custom_reward,
                     action = policy.select_action(state_var)[0].numpy()
             action = int(action) if policy.is_disc_action else action.astype(np.float64)
             next_state, reward, done, _ = env.step(action)
+            mr = copy.deepcopy(reward)
+            done = (reward >= 10)
             reward_episode += reward
             if running_state is not None:
                 next_state = running_state(next_state)
@@ -61,6 +64,7 @@ def collect_samples(pid, queue, env, policy, custom_reward,
                 break
 
             state = next_state
+        print(f'last_reward: {mr}')
 
         # log stats
         num_steps += (t + 1)
